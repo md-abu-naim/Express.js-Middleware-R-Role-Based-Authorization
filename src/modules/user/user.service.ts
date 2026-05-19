@@ -4,7 +4,7 @@ import type { IUser } from "./user.interface";
 
 
 const createUserIntoDB = async (payload: IUser) => {
-    const { name, email, password, age } = payload
+    const { name, email, password, age, role } = payload
 
     const hassedPassword = await bcrypt.hash(password, 10)
 
@@ -13,8 +13,8 @@ const createUserIntoDB = async (payload: IUser) => {
     //     `, [name, email, hassedPassword, age])
 
     const result = await pool.query(`
-        INSERT INTO users(name, email, password, age) VALUES($1, $2, $3, $4) RETURNING *
-        `, [name, email, hassedPassword, age])
+        INSERT INTO users(name, email, password, age, role) VALUES($1, $2, $3, $4, COALASCE($5, 'user')) RETURNING *
+        `, [name, email, hassedPassword, age, role])
 
     delete result.rows[0].password
     return result;
