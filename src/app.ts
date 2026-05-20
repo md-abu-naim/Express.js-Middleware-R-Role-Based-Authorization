@@ -4,14 +4,19 @@ import { profileRouter } from "./modules/profile/profile.route"
 import { authRouter } from "./modules/auth/auth.router"
 import logger from "./middleware/logger"
 import cookieParser from 'cookie-parser'
+import cors from 'cors'
+import globalErrorHandler from "./middleware/globalErrorHandler"
 const app: Application = express()
 
 app.use(cookieParser())
 app.use(express.json())
 app.use(express.text())
 app.use(express.urlencoded({ extended: true }))
-
 app.use(logger)
+
+app.use(cors({
+    origin: 'http://locahost:3000'
+}))
 
 app.get('/api/', (req: Request, res: Response) => {
     res.status(200).json({
@@ -26,5 +31,6 @@ app.use('/api/profile', profileRouter)
 
 app.use('/api/auth', authRouter)
 
+app.use(globalErrorHandler);
 
 export default app
