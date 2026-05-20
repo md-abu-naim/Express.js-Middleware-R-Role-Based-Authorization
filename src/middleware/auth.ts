@@ -2,9 +2,11 @@ import type { NextFunction, Request, Response } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import config from "../config";
 import { pool } from "../DB";
+import type { ROLES } from "../types";
 
 
-const auth = () => {
+const auth = (...roles: ROLES[]) => {
+    console.log(roles);
     return async (req: Request, res: Response, next: NextFunction) => {
 
         try {
@@ -20,7 +22,7 @@ const auth = () => {
             const decoded = jwt.verify(token as string, config.secret as string) as JwtPayload
 
             const userData = await pool.query(`
-            FROM * users WHERE email=$1
+            SELECT * FROM users WHERE email=$1
             `, [decoded.email])
 
             const user = userData.rows[0]
@@ -32,15 +34,24 @@ const auth = () => {
                 })
             }
 
-            if (!user.is_active) {
+            if (!user?.is_active) {
                 res.status(403).json({
                     message: "forbidden",
                     data: {}
                 })
             }
 
+            if (roles.length && !roles.includes(user.role)) {
+                res.status(403).json({
+                    message: "forbidden! Role access not exists",
+                    data: {}
+                })
+            }
+
             req.user = decoded
+
             next()
+
         } catch (error) {
             next(error)
         }
