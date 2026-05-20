@@ -1,5 +1,6 @@
 import type { Request, Response } from "express"
 import { authService } from "./auth.service"
+import sendResponse from "../../utility/sendResponse"
 
 
 const loginUser = async (req: Request, res: Response) => {
@@ -40,13 +41,16 @@ const refreshToken = async(req: Request, res: Response) => {
             sameSite: 'lax'
         })
 
-        res.status(201).json({
+        sendResponse(res, {
+            statusCode: 201,
             success: true,
-            message: "Access token generete",
+            message: "Created Post",
             data: result
         })
+        
     } catch (error: any) {
-        res.status(500).json({
+        sendResponse(res, {
+            statusCode: 500,
             success: false,
             message: error.message,
             error: error
